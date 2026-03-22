@@ -29,6 +29,7 @@ Thu vien Python can dung:
 - seaborn
 - scikit-learn
 - mlxtend
+- streamlit
 
 ## 3) Cai dat va chay chi tiet (Windows - PowerShell)
 
@@ -161,6 +162,23 @@ Cach xu ly:
 ```powershell
 pip install numpy pandas matplotlib seaborn scikit-learn mlxtend
 ```
+
+## 8) Web app tu van viec lam
+
+Nhanh web da co san:
+
+- streamlit_app.py: web kien thuc + bot tu van viec lam
+- requirements.txt: thu vien chay web va cac script
+- WEB_DEPLOY.md: huong dan deploy nhanh
+
+Chay web local:
+
+```powershell
+pip install -r requirements.txt
+streamlit run streamlit_app.py
+```
+
+Chi tiet deploy xem file WEB_DEPLOY.md.
 
 ### Loi: Khong kich hoat duoc .venv
 
