@@ -1,0 +1,115 @@
+{
+  "input_files": [
+    "ai_job_dataset.csv",
+    "ai_job_dataset1.csv"
+  ],
+  "output_files": [
+    "ai_job_dataset_cleaned.csv",
+    "ai_job_dataset1_cleaned.csv",
+    "ai_job_dataset_merged_cleaned.csv"
+  ],
+  "reports": [
+    {
+      "dataset": "ai_job_dataset.csv",
+      "rows": 15000,
+      "columns": 26,
+      "missing_values": 0,
+      "duplicate_job_id": 0,
+      "duplicate_job_id_with_source": 0,
+      "numeric_summary": {
+        "salary_usd": {
+          "min": 32519.0,
+          "max": 260751.625,
+          "mean": 114125.06619166667,
+          "median": 99705.0
+        },
+        "salary_local": {
+          "min": 32519.0,
+          "max": 260751.625,
+          "mean": 114125.06619166667,
+          "median": 99705.0
+        },
+        "years_experience": {
+          "min": 0.0,
+          "max": 19.0,
+          "mean": 6.2532,
+          "median": 5.0
+        },
+        "benefits_score": {
+          "min": 5.0,
+          "max": 10.0,
+          "mean": 7.504273333333334,
+          "median": 7.5
+        }
+      }
+    },
+    {
+      "dataset": "ai_job_dataset1.csv",
+      "rows": 15000,
+      "columns": 26,
+      "missing_values": 0,
+      "duplicate_job_id": 0,
+      "duplicate_job_id_with_source": 0,
+      "numeric_summary": {
+        "salary_usd": {
+          "min": 16621.0,
+          "max": 276912.875,
+          "mean": 121121.831525,
+          "median": 107261.5
+        },
+        "salary_local": {
+          "min": 16621.0,
+          "max": 307573.25,
+          "mean": 129600.06138333333,
+          "median": 109035.5
+        },
+        "years_experience": {
+          "min": 0.0,
+          "max": 19.0,
+          "mean": 6.365666666666667,
+          "median": 5.0
+        },
+        "benefits_score": {
+          "min": 5.0,
+          "max": 10.0,
+          "mean": 7.4995400000000005,
+          "median": 7.5
+        }
+      }
+    },
+    {
+      "dataset": "merged",
+      "rows": 30000,
+      "columns": 26,
+      "missing_values": 0,
+      "duplicate_job_id": 15000,
+      "duplicate_job_id_with_source": 0,
+      "numeric_summary": {
+        "salary_usd": {
+          "min": 16621.0,
+          "max": 276912.875,
+          "mean": 117623.44885833333,
+          "median": 103206.5
+        },
+        "salary_local": {
+          "min": 16621.0,
+          "max": 307573.25,
+          "mean": 121862.5637875,
+          "median": 103944.5
+        },
+        "years_experience": {
+          "min": 0.0,
+          "max": 19.0,
+          "mean": 6.309433333333334,
+          "median": 5.0
+        },
+        "benefits_score": {
+          "min": 5.0,
+          "max": 10.0,
+          "mean": 7.501906666666667,
+          "median": 7.5
+        }
+      }
+    }
+  ]
+}
