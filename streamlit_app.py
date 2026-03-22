@@ -21,7 +21,7 @@ def parse_skills(value: str) -> list[str]:
 @st.cache_data(show_spinner=False)
 def load_data() -> pd.DataFrame:
     if not DATA_PATH.exists():
-        raise FileNotFoundError("Missing ai_job_dataset_merged_cleaned.csv. Run Process.py first.")
+        raise FileNotFoundError("Thiếu ai_job_dataset_merged_cleaned.csv. Hãy chạy Process.py trước.")
 
     df = pd.read_csv(DATA_PATH)
     for col in [
@@ -193,68 +193,68 @@ def build_bot_response(
     high_salary_prob = "Cao" if expected_salary >= high_salary_threshold else "Trung binh"
 
     lines = []
-    lines.append("### Bot tu van viec lam")
-    lines.append(f"- Cap do kinh nghiem uoc tinh: **{inferred}**")
-    lines.append(f"- Muc luong ky vong theo du lieu: **{expected_salary:,.0f} USD**")
-    lines.append(f"- Nguong high-salary tham chieu: **{high_salary_threshold:,.0f} USD**")
-    lines.append(f"- Danh gia tong the: **{tier}** (diem {total_score}/100)")
-    lines.append(f"- Kha nang vao nhom high-salary: **{high_salary_prob}**")
+    lines.append("### Bot tư vấn việc làm")
+    lines.append(f"- Cấp độ kinh nghiệm ước tính: **{inferred}**")
+    lines.append(f"- Mức lương kỳ vọng theo dữ liệu: **{expected_salary:,.0f} USD**")
+    lines.append(f"- Ngưỡng high-salary tham chiếu: **{high_salary_threshold:,.0f} USD**")
+    lines.append(f"- Đánh giá tổng thể: **{tier}** (điểm {total_score}/100)")
+    lines.append(f"- Khả năng vào nhóm high-salary: **{high_salary_prob}**")
 
     lines.append("")
-    lines.append("**Goi y hanh dong:**")
+    lines.append("**Gợi ý hành động:**")
     if expected_salary < target_salary:
-        lines.append("- Tang kha nang dat muc luong muc tieu bang cach bo sung ky nang co support cao (Python, SQL, TensorFlow).")
+        lines.append("- Tăng khả năng đạt mức lương mục tiêu bằng cách bổ sung kỹ năng có support cao (Python, SQL, TensorFlow).")
     if remote_pref == 100:
-        lines.append("- Uu tien tim viec remote full-time de tang do phu hop voi uu tien ca nhan.")
+        lines.append("- Ưu tiên tìm việc remote full-time để tăng độ phù hợp với ưu tiên cá nhân.")
     if len(selected_skills) < 3:
-        lines.append("- Nen bo sung them 2-3 ky nang cot loi de tang ti le match job.")
-    lines.append("- Tap trung vao job title va industry co salary median cao trong bang Job Explorer.")
+        lines.append("- Nên bổ sung thêm 2-3 kỹ năng cốt lõi để tăng tỉ lệ match job.")
+    lines.append("- Tập trung vào job title và industry có salary median cao trong bảng Job Explorer.")
 
     return "\n".join(lines)
 
 
 def main() -> None:
-    st.set_page_config(page_title="AI Job Knowledge & Advisor", page_icon="💼", layout="wide")
+    st.set_page_config(page_title="Trợ lý nghề nghiệp AI", page_icon="💼", layout="wide")
 
-    st.title("AI Job Knowledge Hub + Career Advisor Bot")
-    st.caption("Web don gian de tim hieu du lieu viec lam AI va nhan tu van job phu hop.")
+    st.title("Trung tâm kiến thức việc làm AI + Bot tư vấn nghề nghiệp")
+    st.caption("Web đơn giản để tìm hiểu dữ liệu việc làm AI và nhận tư vấn job phù hợp.")
 
     df = load_data()
     threshold = get_high_salary_threshold(df)
     top_skills = get_top_skills(df, top_n=20)
     uplift_df = get_skill_salary_uplift(df)
 
-    tab1, tab2, tab3 = st.tabs(["Kien thuc du lieu", "Job Explorer", "Bot tu van"])
+    tab1, tab2, tab3 = st.tabs(["Kiến thức dữ liệu", "Khám phá việc làm", "Bot tư vấn"])
 
     with tab1:
         c1, c2, c3, c4 = st.columns(4)
-        c1.metric("So luong job", f"{len(df):,}")
-        c2.metric("Median salary", f"{df['salary_usd'].median():,.0f} USD")
-        c3.metric("High-salary threshold", f"{threshold:,.0f} USD")
-        c4.metric("Remote median", f"{df['remote_ratio'].median():.0f}%")
+        c1.metric("Số lượng job", f"{len(df):,}")
+        c2.metric("Lương trung vị", f"{df['salary_usd'].median():,.0f} USD")
+        c3.metric("Ngưỡng high-salary", f"{threshold:,.0f} USD")
+        c4.metric("Remote trung vị", f"{df['remote_ratio'].median():.0f}%")
 
-        st.subheader("Salary median theo experience level")
+        st.subheader("Lương trung vị theo cấp độ kinh nghiệm")
         exp_salary = (
             df.groupby("experience_level")["salary_usd"].median().sort_values(ascending=False)
         )
         st.bar_chart(exp_salary)
 
-        st.subheader("Top ky nang xuat hien")
+        st.subheader("Top kỹ năng xuất hiện")
         if top_skills.empty:
-            st.info("Khong tim thay thong tin ky nang trong du lieu.")
+            st.info("Không tìm thấy thông tin kỹ năng trong dữ liệu.")
         else:
-            st.dataframe(top_skills, use_container_width=True)
+            st.dataframe(top_skills, width="stretch")
             st.bar_chart(top_skills.set_index("skill")["support"])
 
     with tab2:
-        st.subheader("Loc va tim job theo nhu cau")
+        st.subheader("Lọc và tìm job theo nhu cầu")
         col_a, col_b, col_c = st.columns(3)
 
         with col_a:
             exp_choices = sorted([x for x in df["experience_level"].dropna().unique().tolist() if str(x) != "nan"])
-            exp_filter = st.multiselect("Experience level", exp_choices, default=exp_choices)
+            exp_filter = st.multiselect("Cấp độ kinh nghiệm", exp_choices, default=exp_choices)
             min_salary = st.slider(
-                "Muc luong toi thieu (USD)",
+                "Mức lương tối thiểu (USD)",
                 int(df["salary_usd"].min()),
                 int(df["salary_usd"].max()),
                 int(df["salary_usd"].quantile(0.5)),
@@ -263,13 +263,18 @@ def main() -> None:
 
         with col_b:
             industries = sorted(df["industry"].dropna().unique().tolist())
-            selected_ind = st.multiselect("Industry", industries, default=[])
-            remote_pick = st.select_slider("Remote preference", options=[0, 50, 100], value=50)
+            selected_ind = st.multiselect("Ngành", industries, default=[])
+            remote_pick = st.select_slider(
+                "Mức độ remote mong muốn",
+                options=[0, 50, 100],
+                value=50,
+                key="explorer_remote_pref",
+            )
 
         with col_c:
-            keyword = st.text_input("Keyword (job title)", value="")
+            keyword = st.text_input("Từ khóa (job title)", value="")
             skill_options = top_skills["skill"].tolist() if not top_skills.empty else []
-            explorer_skills = st.multiselect("Ky nang mong muon", skill_options, default=[])
+            explorer_skills = st.multiselect("Kỹ năng mong muốn", skill_options, default=[])
 
         filtered = df.copy()
         if exp_filter:
@@ -289,7 +294,7 @@ def main() -> None:
 
             filtered = filtered[filtered["required_skills"].apply(has_any_skill)]
 
-        st.write(f"So job phu hop: **{len(filtered):,}**")
+        st.write(f"Số job phù hợp: **{len(filtered):,}**")
         display_cols = [
             "job_title",
             "industry",
@@ -300,15 +305,15 @@ def main() -> None:
             "required_skills",
         ]
         display_cols = [c for c in display_cols if c in filtered.columns]
-        st.dataframe(filtered[display_cols].head(200), use_container_width=True)
+        st.dataframe(filtered[display_cols].head(200), width="stretch")
 
     with tab3:
-        st.subheader("Bot de goi y viec lam phu hop")
+        st.subheader("Bot gợi ý việc làm phù hợp")
         left, right = st.columns(2)
         with left:
-            years_exp = st.slider("So nam kinh nghiem", min_value=0.0, max_value=15.0, value=2.0, step=0.5)
+            years_exp = st.slider("Số năm kinh nghiệm", min_value=0.0, max_value=15.0, value=2.0, step=0.5)
             target_salary = st.number_input(
-                "Muc luong muc tieu (USD)",
+                "Mức lương mục tiêu (USD)",
                 min_value=20000.0,
                 max_value=400000.0,
                 value=120000.0,
@@ -316,14 +321,19 @@ def main() -> None:
             )
 
         with right:
-            remote_pref = st.select_slider("Muc do remote mong muon", options=[0, 50, 100], value=50)
+            remote_pref = st.select_slider(
+                "Mức độ remote mong muốn",
+                options=[0, 50, 100],
+                value=50,
+                key="advisor_remote_pref",
+            )
             bot_skills = st.multiselect(
-                "Ky nang ban dang co",
+                "Kỹ năng bạn đang có",
                 options=top_skills["skill"].tolist() if not top_skills.empty else [],
                 default=[],
             )
 
-        if st.button("Tu van ngay"):
+        if st.button("Tư vấn ngay"):
             response = build_bot_response(
                 df=df,
                 years_exp=years_exp,
@@ -336,7 +346,7 @@ def main() -> None:
 
             st.markdown(response)
 
-            st.markdown("**Job de xuat:**")
+            st.markdown("**Job đề xuất:**")
             rec_df = recommend_jobs(
                 df=df,
                 years_exp=years_exp,
@@ -347,9 +357,9 @@ def main() -> None:
             )
 
             if rec_df.empty:
-                st.warning("Khong tim thay job phu hop voi bo loc hien tai. Thu giam target salary hoac mo rong ky nang.")
+                st.warning("Không tìm thấy job phù hợp với bộ lọc hiện tại. Thử giảm target salary hoặc mở rộng kỹ năng.")
             else:
-                st.dataframe(rec_df, use_container_width=True)
+                st.dataframe(rec_df, width="stretch")
 
 
 if __name__ == "__main__":
