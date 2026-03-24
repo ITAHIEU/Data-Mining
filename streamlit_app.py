@@ -5,6 +5,10 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import streamlit as st
+from sklearn.compose import ColumnTransformer
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import OneHotEncoder
 
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -16,6 +20,13 @@ def parse_skills(value: str) -> list[str]:
     if pd.isna(value):
         return []
     return [x.strip() for x in str(value).split(",") if x.strip()]
+
+
+def ensure_columns(df: pd.DataFrame, columns: list[str], fill_value: float = 0.0) -> pd.DataFrame:
+    for col in columns:
+        if col not in df.columns:
+            df[col] = fill_value
+    return df
 
 
 @st.cache_data(show_spinner=False)
@@ -93,6 +104,101 @@ def get_skill_salary_uplift(df: pd.DataFrame, min_count: int = 40) -> pd.DataFra
     agg["uplift"] = agg["median_salary"] - base_salary
     agg = agg.sort_values("uplift", ascending=False)
     return agg
+
+
+@st.cache_resource(show_spinner=False)
+def train_salary_regression_model(df: pd.DataFrame) -> tuple[Pipeline, list[str], list[str]]:
+    numeric_cols = [
+        "years_experience",
+        "remote_ratio",
+        "job_description_length",
+        "benefits_score",
+        "skills_count",
+        "days_to_deadline",
+        "home_country_match",
+        "experience_level_ord",
+        "education_required_ord",
+    ]
+    categorical_cols = [
+        "experience_level",
+        "employment_type",
+        "company_size",
+        "industry",
+        "company_location",
+        "salary_currency",
+    ]
+
+    model_df = df.copy()
+    model_df = ensure_columns(model_df, numeric_cols, fill_value=0.0)
+    for col in categorical_cols:
+        if col not in model_df.columns:
+            model_df[col] = "Unknown"
+
+    for col in numeric_cols:
+        model_df[col] = pd.to_numeric(model_df[col], errors="coerce").fillna(model_df[col].median())
+
+    for col in categorical_cols:
+        model_df[col] = model_df[col].astype("string").fillna("Unknown")
+
+    y = pd.to_numeric(model_df["salary_usd"], errors="coerce")
+    valid_mask = y.notna()
+    X = model_df.loc[valid_mask, numeric_cols + categorical_cols]
+    y = y.loc[valid_mask]
+
+    preprocessor = ColumnTransformer(
+        transformers=[
+            ("num", "passthrough", numeric_cols),
+            ("cat", OneHotEncoder(handle_unknown="ignore"), categorical_cols),
+        ]
+    )
+
+    model = Pipeline(
+        [
+            ("preprocessor", preprocessor),
+            (
+                "model",
+                RandomForestRegressor(
+                    n_estimators=80,
+                    max_depth=16,
+                    random_state=42,
+                    n_jobs=1,
+                    min_samples_leaf=2,
+                ),
+            ),
+        ]
+    )
+    model.fit(X, y)
+    return model, numeric_cols, categorical_cols
+
+
+def get_categorical_options(df: pd.DataFrame, col: str) -> list[str]:
+    if col not in df.columns:
+        return ["Unknown"]
+    values = sorted([str(v) for v in df[col].dropna().unique().tolist() if str(v).strip()])
+    if not values:
+        return ["Unknown"]
+    if "Unknown" not in values:
+        values.append("Unknown")
+    return values
+
+
+def safe_median(df: pd.DataFrame, col: str, default: float = 0.0) -> float:
+    if col not in df.columns:
+        return default
+    val = pd.to_numeric(df[col], errors="coerce").median()
+    return float(default if pd.isna(val) else val)
+
+
+def safe_mode(df: pd.DataFrame, col: str, default: str = "Unknown") -> str:
+    if col not in df.columns:
+        return default
+    values = df[col].dropna()
+    if values.empty:
+        return default
+    mode_vals = values.mode(dropna=True)
+    if mode_vals.empty:
+        return default
+    return str(mode_vals.iloc[0])
 
 
 def infer_level(years: float) -> str:
@@ -224,7 +330,12 @@ def main() -> None:
     top_skills = get_top_skills(df, top_n=20)
     uplift_df = get_skill_salary_uplift(df)
 
-    tab1, tab2, tab3 = st.tabs(["Kiến thức dữ liệu", "Khám phá việc làm", "Bot tư vấn"])
+    tab1, tab2, tab3, tab4 = st.tabs([
+        "Kiến thức dữ liệu",
+        "Khám phá việc làm",
+        "Bot tư vấn",
+        "Dự đoán lương (Regression)",
+    ])
 
     with tab1:
         c1, c2, c3, c4 = st.columns(4)
@@ -360,6 +471,70 @@ def main() -> None:
                 st.warning("Không tìm thấy job phù hợp với bộ lọc hiện tại. Thử giảm target salary hoặc mở rộng kỹ năng.")
             else:
                 st.dataframe(rec_df, width="stretch")
+
+    with tab4:
+        st.subheader("Dự đoán salary_usd bằng RandomForestRegressor")
+        st.caption("Form rút gọn: chỉ nhập các thông tin chính, hệ thống tự điền các biến kỹ thuật còn lại.")
+        st.info("Form nhập liệu hiển thị ngay. Mô hình sẽ được huấn luyện khi bạn bấm nút Dự đoán lương.")
+
+        c1, c2 = st.columns(2)
+        with c1:
+            years_experience = st.number_input("Số năm kinh nghiệm", min_value=0.0, max_value=30.0, value=2.0, step=0.5)
+            remote_ratio = st.slider("Mức độ remote (%)", min_value=0, max_value=100, value=50, step=5)
+            skills_count = st.number_input(
+                "Số lượng kỹ năng chính",
+                min_value=0.0,
+                max_value=100.0,
+                value=safe_median(df, "skills_count", 5.0),
+                step=1.0,
+            )
+
+        with c2:
+            experience_level = st.selectbox("Cấp độ kinh nghiệm", options=get_categorical_options(df, "experience_level"))
+            employment_type = st.selectbox("Loại hình công việc", options=get_categorical_options(df, "employment_type"))
+            company_location = st.selectbox("Quốc gia công ty", options=get_categorical_options(df, "company_location"))
+
+        c3, c4 = st.columns(2)
+        with c3:
+            industry = st.selectbox("Ngành", options=get_categorical_options(df, "industry"))
+        with c4:
+            home_country_match = st.selectbox("Làm việc cùng quốc gia", options=[0.0, 1.0], index=0)
+
+        exp_ord_map = {"EN": 1.0, "MI": 2.0, "SE": 3.0, "EX": 4.0}
+        inferred_exp_ord = exp_ord_map.get(str(experience_level), safe_median(df, "experience_level_ord", 1.0))
+
+        # Auto-fill less important model features to keep the UI simple.
+        auto_job_description_length = safe_median(df, "job_description_length", 500.0)
+        auto_benefits_score = safe_median(df, "benefits_score", 1.0)
+        auto_days_to_deadline = safe_median(df, "days_to_deadline", 30.0)
+        auto_education_required_ord = safe_median(df, "education_required_ord", 1.0)
+        auto_company_size = safe_mode(df, "company_size", "Unknown")
+        auto_salary_currency = safe_mode(df, "salary_currency", "USD")
+
+        if st.button("Dự đoán lương", key="predict_salary_button"):
+            with st.spinner("Đang huấn luyện mô hình và tính dự đoán..."):
+                reg_model, reg_num_cols, reg_cat_cols = train_salary_regression_model(df)
+            input_row = {
+                "years_experience": float(years_experience),
+                "remote_ratio": float(remote_ratio),
+                "job_description_length": float(auto_job_description_length),
+                "benefits_score": float(auto_benefits_score),
+                "skills_count": float(skills_count),
+                "days_to_deadline": float(auto_days_to_deadline),
+                "home_country_match": float(home_country_match),
+                "experience_level_ord": float(inferred_exp_ord),
+                "education_required_ord": float(auto_education_required_ord),
+                "experience_level": str(experience_level),
+                "employment_type": str(employment_type),
+                "company_size": str(auto_company_size),
+                "industry": str(industry),
+                "company_location": str(company_location),
+                "salary_currency": str(auto_salary_currency),
+            }
+            input_df = pd.DataFrame([input_row], columns=reg_num_cols + reg_cat_cols)
+            pred_salary = float(reg_model.predict(input_df)[0])
+            st.success(f"Mức lương dự đoán: {pred_salary:,.0f} USD")
+            st.caption("Đây là kết quả ước lượng từ mô hình RandomForestRegressor huấn luyện trên dữ liệu hiện có.")
 
 
 if __name__ == "__main__":
