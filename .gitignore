@@ -9,3 +9,10 @@ Thumbs.db
 
 # VS Code
 .vscode/
+
+# IDE
+.idea/
+
+# Temporary
+*.tmp
+*.log

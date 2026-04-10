@@ -1,0 +1,2 @@
+method,eps,min_samples,n_clusters,n_noise,silhouette
+DBSCAN,1.2,10,9,7,0.090913641818404

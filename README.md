@@ -1,172 +1,157 @@
-# Data-Mining
+# Data Mining - Phân tích thị trường việc làm AI 2025
 
-Du an Data Mining phan tich thi truong viec lam AI, gom cac bai toan:
+## Đề tài
+**Phân tích thị trường việc làm và xu hướng lương ngành AI trong năm 2025**
 
-- Tien xu ly va lam sach du lieu
-- EDA (kham pha du lieu)
-- Regression (du doan salary_usd)
-- Classification (du doan high salary)
-- Clustering (phan nhom viec lam)
-- Association Rules (luat ket hop ky nang)
+Dự án áp dụng các kỹ thuật Data Mining để phân tích bộ dữ liệu "Global AI Job Market & Salary Trends 2025" (30,000+ bản ghi), bao gồm:
 
-## 1) Cau truc du an
+- **Tiền xử lý dữ liệu** (Data Preprocessing): Làm sạch, xử lý missing values, outliers, feature engineering
+- **Phân tích khám phá dữ liệu** (EDA): Thống kê mô tả, trực quan hóa, phân tích tương quan
+- **Hồi quy** (Regression): Dự đoán mức lương (salary_usd) - 5 mô hình
+- **Phân loại** (Classification): Dự đoán nhóm lương cao - 5 mô hình
+- **Phân cụm** (Clustering): Phân nhóm công việc - 3 thuật toán (KMeans, Agglomerative, DBSCAN)
+- **Luật kết hợp** (Association Rules): Khám phá kỹ năng thường đi cùng nhau
+- **Cross-Validation**: 5-fold CV cho tất cả mô hình
+- **Feature Importance**: Phân tích đặc trưng quan trọng
+- **Learning Curves**: Đánh giá overfitting/underfitting
+- **Hyperparameter Tuning**: GridSearchCV tối ưu siêu tham số
 
-- Process.py: lam sach du lieu, merge 2 file csv, sinh preprocessing_report.json
-- run_eda.py: tao bao cao EDA va cac hinh EDA
-- run_topic_analysis.py: chay regression, classification, clustering, association rules va tao toan bo ket qua trong thu muc results
-- results/: thu muc ket qua csv, markdown report, va hinh anh
+## Thông tin nhóm
 
-## 2) Yeu cau moi truong
+| Thành viên | MSSV |
+|-----------|------|
+| Nguyễn Lê Đức Hiếu | 2210997 |
+| Nguyễn Thị Thúy Nga | 2212168 |
+| Nguyễn Huỳnh Thái Bảo | 2210238 |
 
-- Python 3.10+ (khuyen nghi 3.10 hoac 3.11)
-- PowerShell (Windows)
+**GVHD**: Th.S Đỗ Thành Thái
 
-Thu vien Python can dung:
+## Cấu trúc dự án
 
-- numpy
-- pandas
-- matplotlib
-- seaborn
-- scikit-learn
-- mlxtend
+```
+Data-Mining/
+├── main.py                  # Entry point - chạy toàn bộ pipeline
+├── Process.py               # Tiền xử lý, merge dữ liệu
+├── run_eda.py               # Phân tích khám phá (EDA) + biểu đồ
+├── run_topic_analysis.py    # Regression, Classification, Clustering,
+│                            # Association Rules, Feature Importance,
+│                            # Learning Curves, GridSearchCV
+├── requirements.txt         # Thư viện Python cần thiết
+├── ai_job_dataset.csv       # Dữ liệu gốc 1
+├── ai_job_dataset1.csv      # Dữ liệu gốc 2
+├── MODEL_DETAILS.md         # Chi tiết mô hình
+├── README.md                # File này
+└── results/                 # Thư mục kết quả
+    ├── regression_results.csv
+    ├── classification_results.csv
+    ├── clustering_scores.csv
+    ├── cluster_profile.csv
+    ├── dbscan_results.csv
+    ├── association_rules_top20.csv
+    ├── feature_importance_regression.csv
+    ├── feature_importance_classification.csv
+    ├── gridsearch_results.csv
+    ├── gridsearch_best_params.csv
+    ├── PROJECT_REPORT.md
+    ├── EDA_REPORT.md
+    └── *.png                # 25+ biểu đồ
+```
 
-## 3) Cai dat va chay chi tiet (Windows - PowerShell)
+## Yêu cầu môi trường
 
-### Buoc 1: Mo terminal tai thu muc du an
+- Python 3.10+ (khuyến nghị 3.11 hoặc 3.12)
+- Windows / macOS / Linux
 
-Vi du duong dan:
+## Cài đặt và chạy
 
-E:/Tai lieu/data mining
+### Bước 1: Clone repository
 
-### Buoc 2: Tao va kich hoat virtual environment
+```bash
+git clone https://github.com/ITAHIEU/Data-Mining.git
+cd Data-Mining
+```
+
+### Bước 2: Tạo virtual environment
 
 ```powershell
+# Windows PowerShell
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
-```
 
-Neu gap loi execution policy, chay tam thoi:
-
-```powershell
+# Nếu gặp lỗi execution policy:
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 ```
 
-### Buoc 3: Cai thu vien
+### Bước 3: Cài thư viện
 
-```powershell
-python -m pip install --upgrade pip
-pip install numpy pandas matplotlib seaborn scikit-learn mlxtend
+```bash
+pip install -r requirements.txt
 ```
 
-### Buoc 4: Chay tien xu ly du lieu
+### Bước 4: Chạy toàn bộ pipeline
 
-```powershell
+```bash
+python main.py
+```
+
+Hoặc chạy từng bước:
+
+```bash
+# Bước 1: Tiền xử lý
 python Process.py
-```
 
-Output du kien sinh ra o thu muc goc:
-
-- ai_job_dataset_cleaned.csv
-- ai_job_dataset1_cleaned.csv
-- ai_job_dataset_merged_cleaned.csv
-- preprocessing_report.json
-
-### Buoc 5: Chay EDA
-
-```powershell
+# Bước 2: EDA
 python run_eda.py
-```
 
-Output du kien trong results:
-
-- EDA_REPORT.md
-- eda_hist_salary_usd.png
-- eda_boxplot_salary_by_experience.png
-- eda_heatmap_correlation.png
-
-### Buoc 6: Chay phan tich mo hinh tong hop
-
-```powershell
+# Bước 3: Phân tích mô hình
 python run_topic_analysis.py
 ```
 
-Output du kien trong results:
+## Mô hình sử dụng
 
-- regression_results.csv
-- classification_results.csv
-- clustering_scores.csv
-- cluster_profile.csv
-- association_rules_top20.csv
-- PROJECT_REPORT.md
-- regression_comparison.png
-- classification_comparison.png
-- cluster_scatter_pca.png
-- top_skill_support.png
-- detail_salary_distribution.png
-- detail_salary_by_experience_boxplot.png
-- detail_remote_ratio_vs_salary.png
-- detail_regression_actual_vs_pred.png
-- detail_regression_residual_distribution.png
-- detail_classification_confusion_matrix.png
-- detail_classification_roc_curves.png
-- detail_clustering_silhouette_by_k.png
-- detail_cluster_size_distribution.png
-- detail_association_support_confidence_lift.png
+### Hồi quy (Regression) - Dự đoán salary_usd
 
-## 4) Thu tu chay khuyen nghi
+| Model | RMSE | MAE | R² |
+|-------|------|-----|-----|
+| Random Forest | 21,820 | 16,407 | 0.868 |
+| Gradient Boosting | ~22,000 | ~16,500 | ~0.865 |
+| XGBoost | ~21,900 | ~16,400 | ~0.867 |
+| Linear Regression | 23,374 | 17,906 | 0.849 |
+| Decision Tree | 23,789 | 17,430 | 0.843 |
 
-Chay dung thu tu nay de tranh loi file dau vao:
+### Phân loại (Classification) - Dự đoán high salary
 
-1. python Process.py
-2. python run_eda.py
-3. python run_topic_analysis.py
+| Model | Accuracy | F1 | ROC-AUC |
+|-------|----------|-----|---------|
+| Random Forest | 0.927 | 0.853 | 0.979 |
+| Gradient Boosting | ~0.928 | ~0.854 | ~0.980 |
+| XGBoost | ~0.929 | ~0.855 | ~0.981 |
+| Logistic Regression | 0.927 | 0.852 | 0.980 |
+| Decision Tree | 0.920 | 0.840 | 0.959 |
 
-Ly do: run_topic_analysis.py can file ai_job_dataset_merged_cleaned.csv do Process.py tao ra truoc.
+### Phân cụm (Clustering)
 
-## 5) Kiem tra nhanh sau khi chay
+- **KMeans** (best): k=2, silhouette=0.225
+- **Agglomerative**: k=2, silhouette=0.215
+- **DBSCAN**: Density-based, không cần chọn k
 
-- Kiem tra file ai_job_dataset_merged_cleaned.csv da ton tai
-- Kiem tra file results/PROJECT_REPORT.md da duoc tao
-- Kiem tra cac file csv ket qua trong results
+### Luật kết hợp (Association Rules)
 
-## 6) Day len GitHub (neu can)
+- TensorFlow → Python: confidence=0.426, lift=1.429
+- Python → TensorFlow: confidence=0.291, lift=1.429
 
-Lenh day ma nguon va ket qua len repo:
+## Nguồn dữ liệu
 
-```powershell
-git add .
-git commit -m "Update README with detailed run guide"
-git push
-```
+- [Global AI Job Market & Salary Trends 2025 (Kaggle)](https://www.kaggle.com/datasets/bismasajjad/global-ai-job-market-and-salary-trends-2025)
 
-## 7) Loi thuong gap va cach xu ly
+## Triển khai (Deploy)
 
-### Loi: Missing ai_job_dataset_merged_cleaned.csv
+- [Web App (Streamlit)](https://job-ai-datamining.streamlit.app/)
 
-Nguyen nhan: chua chay Process.py.
+## Lỗi thường gặp
 
-Cach xu ly:
-
-```powershell
-python Process.py
-python run_topic_analysis.py
-```
-
-### Loi: ModuleNotFoundError
-
-Nguyen nhan: chua cai du thu vien trong virtual environment dang dung.
-
-Cach xu ly:
-
-```powershell
-pip install numpy pandas matplotlib seaborn scikit-learn mlxtend
-```
-
-### Loi: Khong kich hoat duoc .venv
-
-Cach xu ly:
-
-```powershell
-Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-.\.venv\Scripts\Activate.ps1
-```
+| Lỗi | Nguyên nhân | Cách xử lý |
+|-----|------------|------------|
+| Missing CSV | Chưa chạy Process.py | `python Process.py` |
+| ModuleNotFoundError | Thiếu thư viện | `pip install -r requirements.txt` |
+| XGBoost warning | Chưa cài xgboost | `pip install xgboost` (tùy chọn) |
